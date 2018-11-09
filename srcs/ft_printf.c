@@ -6,7 +6,7 @@
 /*   By: rdagnaud <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/07/29 17:04:12 by rdagnaud          #+#    #+#             */
-/*   Updated: 2018/10/06 22:52:09 by rdagnaud         ###   ########.fr       */
+/*   Updated: 2018/11/08 21:44:16 by rdagnaud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,10 +31,62 @@ void	last_step(t_return **all_data)
 	free(*all_data);
 }
 
+void	add_str_to_data(t_return *all_data)
+{
+	char	*str_to_add;
+
+	str_to_add = va_arg(all_data->args, char*);
+	all_data->ret_str = ft_strcat(all_data->ret_str, str_to_add);
+	all_data->ret_val += ft_strlen(str_to_add);
+}
+
+void	add_uchar_to_data(t_return *all_data)
+{
+	int		uchar_to_add;
+
+	uchar_to_add = (unsigned char)va_arg(all_data->args, int);
+	all_data->ret_str[all_data->ret_val] = uchar_to_add;
+	all_data->ret_str[all_data->ret_val + 1] = '\0';
+	all_data->ret_val++;
+}
+
+void	add_int_to_data(t_return *all_data)
+{
+	int		int_to_add;
+	char*	str_to_add;
+
+	int_to_add = va_arg(all_data->args, int);
+	str_to_add = ft_itoa(int_to_add);
+	all_data->ret_str = ft_strcat(all_data->ret_str, str_to_add);
+	all_data->ret_val += ft_strlen(str_to_add);
+}
+
+void	handle_format(const char *format, t_return *all_data, int *i)
+{
+	if (format[*i] == 'd' || format[*i] == 'i')
+		add_int_to_data(all_data);
+	else if (format[*i] == 'c')
+		add_uchar_to_data(all_data);
+	else if (format[*i] == 's')
+		add_str_to_data(all_data);
+}
+
+void	handle_flag(const char *format, t_return *all_data, int *i)
+{
+	handle_format(format, all_data, i);
+}
+
 int	check_flags(const char *format, t_return *all_data, int *i)
 {
-	if (format && all_data && (*i) + 1)
-		return (0);
+	if (format && all_data)
+	{
+		if (format[*i] == '%')
+		{
+			(*i)++;
+			handle_flag(format, all_data, i);
+			return (1);
+		}
+	}
 	return (0);
 }
 
@@ -59,9 +111,7 @@ int	ft_printf(const char *format, ...)
 	while (format[i])
 	{
 		if (!(check_flags(format, all_data, &i)))
-		{
 			add_current_char(all_data, format[i]);
-		}
 		i++;
 	}
 	ret = all_data->ret_val;
@@ -71,8 +121,23 @@ int	ft_printf(const char *format, ...)
 
 int main(void)
 {
-	ft_putnbr(ft_printf("bonjour"));
-	ft_putnbr(ft_printf("aurevoir"));
-	ft_putnbr(ft_printf("lol"));
+	ft_putnbr(ft_printf("bonjour "));
+	ft_putchar('\n');
+	ft_putnbr(ft_printf("aurevoir "));
+	ft_putchar('\n');
+	ft_putnbr(ft_printf("lol "));
+	ft_putchar('\n');
+	ft_putnbr(ft_printf("%d ", 25));
+	ft_putchar('\n');
+	ft_putnbr(ft_printf("bon%djour ", 13));
+	ft_putchar('\n');
+	ft_putnbr(ft_printf("%c ", 'e'));
+	ft_putchar('\n');
+	ft_putnbr(ft_printf("bo%dn%cjo%dur ", 1, '\n', 13));
+	ft_putchar('\n');
+	ft_putnbr(ft_printf("%s ", "bonjour"));
+	ft_putchar('\n');
+	ft_putnbr(ft_printf("bon%s ", "jour"));
+	ft_putchar('\n');
 	return (0);
 }
